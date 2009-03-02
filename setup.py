@@ -23,7 +23,7 @@ Installing django-tokyo-sessions
 
 2. Set ``tokyo_sessions.tokyo`` as your session engine, like so::
 
-       SESSION_ENGINE = 'tokyo_sessions.tokyo'
+       SESSION_ENGINE = 'tokyo_sessions.tyrant'
 
 
 3. Add settings describing where to connect to the Tokyo Tyrant database::
