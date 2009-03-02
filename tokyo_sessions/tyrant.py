@@ -6,11 +6,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.encoding import force_unicode
 from django.contrib.sessions.backends.base import SessionBase, CreateError
 
-try:
-    from threading import local
-except ImportError:
-    from django.utils._threading_local import local
-
 TT_HOST = getattr(settings, 'TT_HOST', None)
 TT_PORT = getattr(settings, 'TT_PORT', None)
 
@@ -18,15 +13,8 @@ if TT_HOST is None or TT_PORT is None:
     raise ImproperlyConfigured(u'To use django-tokyo-sessions, you must ' + 
         'first set the TT_HOST and TT_PORT settings in your settings.py')
 else:
-    SERVER_LOCAL = local()
     def get_server():
-        try:
-            server = SERVER_LOCAL.server
-        except AttributeError:
-            server = pytyrant.PyTyrant.open(TT_HOST, TT_PORT)
-            SERVER_LOCAL.server = server
-        return server
-        
+        return pytyrant.PyTyrant.open(TT_HOST, TT_PORT)
 
 class SessionStore(SessionBase):
     """
