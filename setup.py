@@ -21,7 +21,7 @@ Installing django-tokyo-sessions
    use easy install or pip like so ``easy_install django-tokyo-sessions``.
 
 
-2. Set ``tokyo_sessions.tokyo`` as your session engine, like so::
+2. Set ``tokyo_sessions.tyrant`` as your session engine, like so::
 
        SESSION_ENGINE = 'tokyo_sessions.tyrant'
 
