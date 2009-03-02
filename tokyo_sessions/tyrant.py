@@ -6,6 +6,11 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.encoding import force_unicode
 from django.contrib.sessions.backends.base import SessionBase, CreateError
 
+try:
+    from threading import local
+except ImportError:
+    from django.utils._threading_local import local
+
 TT_HOST = getattr(settings, 'TT_HOST', None)
 TT_PORT = getattr(settings, 'TT_PORT', None)
 
@@ -13,14 +18,22 @@ if TT_HOST is None or TT_PORT is None:
     raise ImproperlyConfigured(u'To use django-tokyo-sessions, you must ' + 
         'first set the TT_HOST and TT_PORT settings in your settings.py')
 else:
-    server = pytyrant.PyTyrant.open(TT_HOST, TT_PORT)
+    SERVER_LOCAL = local()
+    def get_server():
+        try:
+            server = SERVER_LOCAL.server
+        except AttributeError:
+            server = pytyrant.PyTyrant.open(TT_HOST, TT_PORT)
+            SERVER_LOCAL.server = server
+        return server
+        
 
 class SessionStore(SessionBase):
     """
     A Tokyo Cabinet-based session store.
     """
     def load(self):
-        session_data = server.get(self.session_key)
+        session_data = get_server().get(self.session_key)
         if session_data is not None:
             expiry, data = int(session_data[:15]), session_data[15:]
             if expiry < time.time():
@@ -45,10 +58,10 @@ class SessionStore(SessionBase):
             raise CreateError
         data = self.encode(self._get_session(no_load=must_create))
         encoded = '%15d%s' % (int(time.time()) + self.get_expiry_age(), data)
-        server[self.session_key] = encoded
+        get_server()[self.session_key] = encoded
     
     def exists(self, session_key):
-        retrieved = server.get(session_key)
+        retrieved = get_server().get(session_key)
         if retrieved is None:
             return False
         expiry, data = int(retrieved[:15]), retrieved[15:]
@@ -61,4 +74,4 @@ class SessionStore(SessionBase):
             if self._session_key is None:
                 return
             session_key = self._session_key
-        del server[session_key]
+        del get_server()[session_key]

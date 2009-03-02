@@ -1,6 +1,6 @@
 r"""
 >>> from django.conf import settings
->>> from tokyo_sessions.tokyo import SessionStore as TokyoSession
+>>> from tokyo_sessions.tyrant import SessionStore as TokyoSession
 
 >>> tokyo_session = TokyoSession()
 >>> tokyo_session.modified
